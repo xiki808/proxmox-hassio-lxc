@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+IOWETEA_IP_ADDRESS=192.168.1.11
+IOWETEA_GATEWAY_IP=192.168.1.1
+IOWETEA_CONTAINER_ID=101
+IOWETEA_HOSTNAME=homeassistant
+
 # Setup script environment
 set -o errexit  #Exit immediately if a pipeline returns a non-zero status
 set -o errtrace #Trap ERR from shell functions, command substitutions, and commands from subshell
@@ -82,7 +87,7 @@ fi
 info "Using '$STORAGE' for storage location."
 
 # Get the next guest VM/LXC ID
-CTID=$(pvesh get /cluster/nextid)
+CTID=IOWETEA_CONTAINER_ID
 info "Container ID is $CTID."
 
 # Download latest Debian LXC template
@@ -121,14 +126,14 @@ else
   mkfs.ext4 $(pvesm path $ROOTFS) &>/dev/null
 fi
 ARCH=$(dpkg --print-architecture)
-HOSTNAME=homeassistant
+HOSTNAME=IOWETEA_HOSTNAME
 TEMPLATE_STRING="local:vztmpl/${TEMPLATE}"
 PCT_OPTIONS=(
   -arch $ARCH
   -cmode shell
   -features nesting=1
   -hostname $HOSTNAME
-  -net0 name=eth0,bridge=vmbr0
+  -net0 name=eth0,bridge=vmbr0,ip=IOWETEA_IP_ADDRESS/24,gw=IOWETEA_GATEWAY_IP
   -onboot 1
   -ostype $OSTYPE
   -rootfs $ROOTFS,size=$DISK_SIZE
